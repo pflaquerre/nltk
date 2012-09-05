@@ -67,7 +67,7 @@ from nltk.parse.rd import RecursiveDescentParser, SteppingRecursiveDescentParser
 from nltk.parse.sr import ShiftReduceParser, SteppingShiftReduceParser
 from nltk.parse.util import load_parser, TestGrammar, extract_test_sentences
 from nltk.parse.viterbi import ViterbiParser
-from nltk.parse.dependencygraph import DependencyGraph, nx_graph
+from nltk.parse.dependencygraph import DependencyGraph
 from nltk.parse.projectivedependencyparser import (ProjectiveDependencyParser,
                                                    ProbabilisticProjectiveDependencyParser)
 from nltk.parse.nonprojectivedependencyparser import (NonprojectiveDependencyParser,

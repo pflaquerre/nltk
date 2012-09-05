@@ -289,25 +289,26 @@ class DependencyGraph(object):
                 raise ValueError('Number of tab-delimited fields (%d) not supported by CoNLL(10) or Malt-Tab(4) format' % (style))
         return ''.join(lines)
 
+    def nx_graph(self):
+        """
+        Convert the data in a ``nodelist`` into a networkx
+        labeled directed graph.
+        :rtype: XDigraph
+        """
+        import networkx as NX
 
-def nx_graph(self):
-    """
-    Convert the data in a ``nodelist`` into a networkx
-    labeled directed graph.
-    :rtype: XDigraph
-    """
-    nx_nodelist = range(1, len(self.nodelist))
-    nx_edgelist = [(n, self._hd(n), self._rel(n))
-                        for n in nx_nodelist if self._hd(n)]
-    self.nx_labels = {}
-    for n in nx_nodelist:
-        self.nx_labels[n] = self.nodelist[n]['word']
+        nx_nodelist = range(1, len(self.nodelist))
+        nx_edgelist = [(n, self._hd(n), self._rel(n))
+                            for n in nx_nodelist if self._hd(n)]
+        nx_labels = {}
+        for n in nx_nodelist:
+            nx_labels[n] = self.nodelist[n]['word']
 
-    g = NX.XDiGraph()
-    g.add_nodes_from(nx_nodelist)
-    g.add_edges_from(nx_edgelist)
+        g = NX.DiGraph()
+        g.add_nodes_from(nx_nodelist)
+        g.add_edges_from(nx_edgelist)
 
-    return g
+        return g, nx_labels
 
 def demo():
     malt_demo()
@@ -342,18 +343,14 @@ Nov.    NNP     9       VMOD
     tree = dg.tree()
     print tree.pprint()
     if nx:
-        #currently doesn't work
-        try:
-            import networkx as NX
-            import pylab as P
-        except ImportError:
-            raise
-            g = dg.nx_graph()
+        import pylab as P
+        import networkx as NX
+        g, nx_labels = dg.nx_graph()
         g.info()
         pos = NX.spring_layout(g, dim=1)
         NX.draw_networkx_nodes(g, pos, node_size=50)
         #NX.draw_networkx_edges(g, pos, edge_color='k', width=8)
-        NX.draw_networkx_labels(g, pos, dg.nx_labels)
+        NX.draw_networkx_labels(g, pos, nx_labels)
         P.xticks([])
         P.yticks([])
         P.savefig('tree.png')
