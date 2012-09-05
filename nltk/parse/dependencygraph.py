@@ -19,6 +19,7 @@ from nltk.tree import Tree
 from pprint import pformat
 import re
 
+
 #################################################################
 # DependencyGraph Class
 #################################################################
@@ -239,7 +240,6 @@ class DependencyGraph(object):
             for dep in node['deps']:
                 key = tuple([node['address'], dep]) #'%d -> %d' % (node['address'], dep)
                 distances[key] = 1
-        window = 0
         for n in range(len(self.nodelist)):
             new_entries = {}
             for pair1 in distances:
@@ -254,7 +254,6 @@ class DependencyGraph(object):
                     path = self.get_cycle_path(self.get_by_address(pair[0]), pair[0]) #self.nodelist[pair[0]], pair[0])
                     return path
         return False  # return []?
-
 
     def get_cycle_path(self, curr_node, goal_node_index):
         for dep in curr_node['deps']:
@@ -292,17 +291,16 @@ class DependencyGraph(object):
     def nx_graph(self):
         """
         Convert the data in a ``nodelist`` into a networkx
-        labeled directed graph.
-        :rtype: XDigraph
+        labeled directed graph. Also returns the labels for each
+        node.
+        :rtype: DiGraph, list
         """
         import networkx as NX
 
         nx_nodelist = range(1, len(self.nodelist))
-        nx_edgelist = [(n, self._hd(n), self._rel(n))
+        nx_edgelist = [(n, self._hd(n), {'rel': self._rel(n)})
                             for n in nx_nodelist if self._hd(n)]
-        nx_labels = {}
-        for n in nx_nodelist:
-            nx_labels[n] = self.nodelist[n]['word']
+        nx_labels = {n: self.nodelist[n]['word'] for n in nx_nodelist}
 
         g = NX.DiGraph()
         g.add_nodes_from(nx_nodelist)
@@ -310,11 +308,13 @@ class DependencyGraph(object):
 
         return g, nx_labels
 
+
 def demo():
     malt_demo()
     conll_demo()
     conll_file_demo()
     cycle_finding_demo()
+
 
 def malt_demo(nx=False):
     """
@@ -343,13 +343,13 @@ Nov.    NNP     9       VMOD
     tree = dg.tree()
     print tree.pprint()
     if nx:
+        # FIXME do we really need networkx? I'm sure pyplot supports graphs
         import pylab as P
         import networkx as NX
         g, nx_labels = dg.nx_graph()
-        g.info()
-        pos = NX.spring_layout(g, dim=1)
-        NX.draw_networkx_nodes(g, pos, node_size=50)
-        #NX.draw_networkx_edges(g, pos, edge_color='k', width=8)
+        pos = NX.spring_layout(g, dim=2)
+        NX.draw_networkx_nodes(g, pos, node_size=400)
+        NX.draw_networkx_edges(g, pos)
         NX.draw_networkx_labels(g, pos, nx_labels)
         P.xticks([])
         P.yticks([])
@@ -368,6 +368,7 @@ def conll_demo():
     print dg
     print dg.to_conll(4)
 
+
 def conll_file_demo():
     print 'Mass conll_read demo...'
     graphs = [DependencyGraph(entry)
@@ -375,6 +376,7 @@ def conll_file_demo():
     for graph in graphs:
         tree = graph.tree()
         print '\n' + tree.pprint()
+
 
 def cycle_finding_demo():
     dg = DependencyGraph(treebank_data)
